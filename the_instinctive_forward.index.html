@@ -1,0 +1,1842 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>The Instinctive Forward</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Premium Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+    <!-- Font Awesome Pro Sports Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #030712;
+            overscroll-behavior-y: contain;
+        }
+        /* Mobile Aspect Ratio Container for Desktop, full screen on actual mobile devices */
+        .app-container {
+            max-width: 480px;
+            width: 100%;
+            min-height: 100vh;
+            background-color: #090d16;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+        .canvas-field {
+            background: radial-gradient(circle at center, #064e3b 0%, #022c22 100%);
+            border: 2px solid #065f46;
+            position: relative;
+            overflow: hidden;
+            aspect-ratio: 16 / 10;
+            width: 100%;
+            border-radius: 16px;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        @keyframes pulse-emerald {
+            0%, 100% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.08); opacity: 1; }
+        }
+        .pulse-active {
+            animation: pulse-emerald 2s infinite;
+        }
+        .gold-glow {
+            box-shadow: 0 0 15px rgba(245, 158, 11, 0.25);
+            border-color: rgba(245, 158, 11, 0.4);
+        }
+        .active-tab {
+            color: #10b981 !important;
+        }
+        .active-tab i {
+            transform: translateY(-4px);
+            color: #10b981;
+        }
+    </style>
+</head>
+<body class="flex justify-center items-center min-h-screen">
+
+    <!-- Primary Mobile App Container Shell -->
+    <div class="app-container overflow-hidden flex flex-col relative pb-20">
+        
+        <!-- Onboarding & Login Screen (Hidden if Signed In) -->
+        <div id="onboarding-screen" class="absolute inset-0 bg-slate-950 z-50 flex flex-col p-6 overflow-y-auto hide-scrollbar hidden">
+            <div class="flex-1 flex flex-col justify-center my-auto space-y-6">
+                <div class="text-center space-y-3">
+                    <div class="w-16 h-16 bg-gradient-to-tr from-emerald-500 to-teal-400 text-slate-950 rounded-2xl flex items-center justify-center font-black text-3xl mx-auto shadow-xl shadow-emerald-500/15">
+                        <i class="fa-solid fa-ranking-star"></i>
+                    </div>
+                    <h1 class="text-2xl font-black tracking-tight text-white uppercase mt-4">The Instinctive Forward</h1>
+                    <p class="text-xs text-slate-400">Your professional individual development training academy. Let's customize your tactical metrics.</p>
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Your Full Name / Alias</label>
+                        <input id="ob-name" type="text" placeholder="e.g. Joshua Asekhame" class="w-full bg-slate-900 border border-slate-800 focus:border-emerald-500 text-xs rounded-xl px-4 py-3 text-slate-100 focus:outline-none transition-all">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Height (cm)</label>
+                            <input id="ob-height" type="number" placeholder="e.g. 182" class="w-full bg-slate-900 border border-slate-800 focus:border-emerald-500 text-xs rounded-xl px-4 py-3 text-slate-100 focus:outline-none transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Dominant Foot</label>
+                            <select id="ob-foot" class="w-full bg-slate-900 border border-slate-800 focus:border-emerald-500 text-xs rounded-xl px-4 py-3 text-slate-100 focus:outline-none transition-all">
+                                <option value="Right">Right Foot</option>
+                                <option value="Left">Left Foot</option>
+                                <option value="Both">Ambidextrous</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Tactical Position Profile</label>
+                        <div class="grid grid-cols-2 gap-2" id="position-selector-grid">
+                            <button onclick="selectOnboardingPosition('CF')" id="pos-btn-CF" class="p-3 bg-slate-900 border border-slate-800 hover:border-emerald-500/50 rounded-xl text-left transition-all">
+                                <span class="block text-xs font-black text-slate-200">CF</span>
+                                <span class="block text-[9px] text-slate-500 uppercase mt-0.5">Center Forward</span>
+                            </button>
+                            <button onclick="selectOnboardingPosition('SS')" id="pos-btn-SS" class="p-3 bg-slate-900 border border-slate-800 hover:border-emerald-500/50 rounded-xl text-left transition-all">
+                                <span class="block text-xs font-black text-slate-200">SS</span>
+                                <span class="block text-[9px] text-slate-500 uppercase mt-0.5">Second Striker</span>
+                            </button>
+                            <button onclick="selectOnboardingPosition('LW')" id="pos-btn-LW" class="p-3 bg-slate-900 border border-slate-800 hover:border-emerald-500/50 rounded-xl text-left transition-all">
+                                <span class="block text-xs font-black text-slate-200">LW</span>
+                                <span class="block text-[9px] text-slate-500 uppercase mt-0.5">Left Winger</span>
+                            </button>
+                            <button onclick="selectOnboardingPosition('RW')" id="pos-btn-RW" class="p-3 bg-slate-900 border border-slate-800 hover:border-emerald-500/50 rounded-xl text-left transition-all">
+                                <span class="block text-xs font-black text-slate-200">RW</span>
+                                <span class="block text-[9px] text-slate-500 uppercase mt-0.5">Right Winger</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <button onclick="submitOnboarding()" class="w-full py-4 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs uppercase tracking-wider rounded-xl transition-all shadow-lg shadow-emerald-500/10">
+                    Initialize Academy Profile <i class="fa-solid fa-arrow-right ml-1"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Sticky Header Bar inside App Shell -->
+        <header class="bg-slate-950/90 border-b border-slate-900 px-4 py-3 flex items-center justify-between sticky top-0 z-40">
+            <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 bg-gradient-to-tr from-emerald-500 to-teal-400 text-slate-950 rounded-lg flex items-center justify-center font-black text-base shadow-lg shadow-emerald-500/5">
+                    <i class="fa-solid fa-fire-flame-curved"></i>
+                </div>
+                <div>
+                    <h2 class="text-xs font-black text-slate-200 uppercase tracking-wide flex items-center gap-1.5">
+                        <span id="header-user-name">Striker</span>
+                        <span id="header-pos-tag" class="text-[9px] bg-emerald-950 text-emerald-400 px-1 py-0.2 rounded border border-emerald-900/40">CF</span>
+                    </h2>
+                    <p class="text-[9px] text-slate-500 uppercase font-bold tracking-widest">Level <span id="header-lvl-num">1</span> Prospect</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <!-- Coins display -->
+                <div class="bg-slate-900 border border-slate-850 px-2.5 py-1 rounded-lg flex items-center gap-1.5 cursor-pointer" onclick="switchTab('store')">
+                    <i class="fa-solid fa-coins text-amber-500 text-xs animate-pulse"></i>
+                    <span id="header-coins" class="text-xs font-black text-amber-400">100</span>
+                </div>
+                <!-- Mini Streak displays -->
+                <div class="bg-slate-900 border border-slate-850 px-2.5 py-1 rounded-lg flex items-center gap-1">
+                    <i class="fa-solid fa-fire text-orange-500 text-xs"></i>
+                    <span id="header-streak-count" class="text-xs font-black text-slate-200">0</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Dynamic Screen Content Sections -->
+        <div class="flex-1 overflow-y-auto px-4 py-4 space-y-5 hide-scrollbar" id="main-content-area">
+
+            <!-- TAB 1: HOME/WORKOUT SCREENS -->
+            <div id="tab-workout" class="space-y-5 tab-view">
+                
+                <!-- Gamified Streaks Panel -->
+                <div class="bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-850 rounded-2xl p-4 flex items-center justify-between relative overflow-hidden shadow-xl">
+                    <div class="absolute -top-10 -right-10 w-24 h-24 bg-emerald-500/5 rounded-full blur-xl"></div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 bg-orange-500/10 text-orange-500 border border-orange-500/20 rounded-xl flex items-center justify-center text-xl relative">
+                            <i class="fa-solid fa-fire animate-bounce"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xs font-extrabold text-slate-200 uppercase tracking-wider">Active Training Streak</h3>
+                            <div class="flex items-center gap-2 mt-0.5">
+                                <span id="streak-score-hero" class="text-2xl font-black text-white leading-none">0</span>
+                                <span class="text-[9px] text-slate-400 uppercase font-black">Consecutive Days</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-right border-l border-slate-850 pl-4">
+                        <span class="block text-[8px] text-slate-500 uppercase tracking-widest font-bold">Freeze Inventory</span>
+                        <div class="flex items-center justify-end gap-1 mt-1">
+                            <i class="fa-solid fa-snowflake text-sky-400 text-xs"></i>
+                            <span id="home-freezes-count" class="text-xs font-black text-sky-400">1</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modern Horizontal Calendar Week View -->
+                <div class="bg-slate-900/60 border border-slate-850/80 rounded-2xl p-3.5">
+                    <div class="flex justify-between items-center mb-2.5">
+                        <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest"><i class="fa-solid fa-calendar-week"></i> Target Sequence</span>
+                        <span id="cal-ratio" class="text-[9px] text-emerald-400 font-bold uppercase">0/6 Workouts Done</span>
+                    </div>
+                    <div class="grid grid-cols-7 gap-1.5">
+                        <div id="cal-1" class="p-1.5 bg-slate-950 border border-slate-850 rounded-lg flex flex-col items-center gap-1">
+                            <span class="text-[8px] text-slate-500 font-extrabold uppercase">M</span>
+                            <div id="chk-dot-1" class="w-3.5 h-3.5 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-[7px] text-slate-700 font-bold"><i class="fa-solid fa-check"></i></div>
+                        </div>
+                        <div id="cal-2" class="p-1.5 bg-slate-950 border border-slate-850 rounded-lg flex flex-col items-center gap-1">
+                            <span class="text-[8px] text-slate-500 font-extrabold uppercase">T</span>
+                            <div id="chk-dot-2" class="w-3.5 h-3.5 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-[7px] text-slate-700 font-bold"><i class="fa-solid fa-check"></i></div>
+                        </div>
+                        <div id="cal-3" class="p-1.5 bg-slate-950 border border-slate-850 rounded-lg flex flex-col items-center gap-1">
+                            <span class="text-[8px] text-slate-500 font-extrabold uppercase">W</span>
+                            <div id="chk-dot-3" class="w-3.5 h-3.5 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-[7px] text-slate-700 font-bold"><i class="fa-solid fa-check"></i></div>
+                        </div>
+                        <div id="cal-4" class="p-1.5 bg-slate-950 border border-slate-850 rounded-lg flex flex-col items-center gap-1">
+                            <span class="text-[8px] text-slate-500 font-extrabold uppercase">T</span>
+                            <div id="chk-dot-4" class="w-3.5 h-3.5 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-[7px] text-slate-700 font-bold"><i class="fa-solid fa-check"></i></div>
+                        </div>
+                        <div id="cal-5" class="p-1.5 bg-slate-950 border border-slate-850 rounded-lg flex flex-col items-center gap-1">
+                            <span class="text-[8px] text-slate-500 font-extrabold uppercase">F</span>
+                            <div id="chk-dot-5" class="w-3.5 h-3.5 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-[7px] text-slate-700 font-bold"><i class="fa-solid fa-check"></i></div>
+                        </div>
+                        <div id="cal-6" class="p-1.5 bg-slate-950 border border-slate-850 rounded-lg flex flex-col items-center gap-1">
+                            <span class="text-[8px] text-slate-500 font-extrabold uppercase">S</span>
+                            <div id="chk-dot-6" class="w-3.5 h-3.5 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-[7px] text-slate-700 font-bold"><i class="fa-solid fa-check"></i></div>
+                        </div>
+                        <!-- Sunday Rest Day Indicator -->
+                        <div class="p-1.5 bg-emerald-950/25 border border-emerald-900/30 rounded-lg flex flex-col items-center gap-1">
+                            <span class="text-[8px] text-emerald-400 font-extrabold uppercase">S</span>
+                            <div class="w-3.5 h-3.5 rounded-full bg-emerald-950 text-emerald-400 flex items-center justify-center text-[7px] font-extrabold">☕</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active Primary Exercises Modules Header -->
+                <div class="flex items-center justify-between border-b border-slate-900 pb-2 mt-2">
+                    <h3 class="text-xs font-black text-slate-200 uppercase tracking-wider"><i class="fa-solid fa-clipboard-list text-emerald-500 mr-1.5"></i> Daily 45-Min Workout</h3>
+                    <span class="text-[9px] bg-slate-900 text-slate-400 px-2 py-0.5 rounded-full font-bold uppercase">Default Core Loop</span>
+                </div>
+
+                <!-- DRILL LOOP ACCORDION/LIST -->
+                <div class="space-y-4">
+                    
+                    <!-- DRILL 1 -->
+                    <div class="bg-slate-900 border border-slate-850 rounded-2xl p-4 space-y-3 shadow-md" id="p-card-1">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <span class="w-6 h-6 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center text-xs font-extrabold">1</span>
+                                <div>
+                                    <h4 class="text-xs font-black text-slate-100 uppercase tracking-wide">Blind-Touch First Contact</h4>
+                                    <p class="text-[8px] text-slate-500 uppercase tracking-widest font-black">10 Mins · Coerver Control</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-1.5 bg-slate-950 border border-slate-850 px-2 py-1 rounded-lg">
+                                <span id="time-val-1" class="font-mono text-[10px] font-bold text-slate-300">10:00</span>
+                                <button onclick="toggleDrillTimer(1, 600)" id="t-btn-1" class="text-[8px] px-1.5 py-0.5 bg-emerald-500 text-slate-950 font-black uppercase rounded">Start</button>
+                                <button onclick="resetDrillTimer(1)" class="text-[8px] px-1 py-0.5 bg-slate-800 text-slate-400 rounded hover:text-white" title="Reset"><i class="fa-solid fa-arrow-rotate-left"></i></button>
+                            </div>
+                        </div>
+
+                        <div class="canvas-field">
+                            <canvas id="canv-1" class="w-full h-full block"></canvas>
+                        </div>
+
+                        <p class="text-[10px] text-slate-400 leading-normal bg-slate-950/40 p-2.5 rounded-xl border border-slate-900">
+                            Smash ball against the wall from 3m. As it rebounds, cleanly slide it through a 1m gate using your first touch without looking at your feet.
+                        </p>
+
+                        <div class="flex justify-between items-center pt-2 border-t border-slate-850/60">
+                            <span class="text-[9px] font-bold text-slate-500 uppercase">Phase Checked:</span>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="chk-core-1" onchange="toggleCoreDrillCheck(1)" class="sr-only peer">
+                                <div class="w-9 h-5 bg-slate-950 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-slate-700 after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:bg-emerald-500 peer-checked:bg-emerald-950 border border-slate-850"></div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- DRILL 2 -->
+                    <div class="bg-slate-900 border border-slate-850 rounded-2xl p-4 space-y-3 shadow-md" id="p-card-2">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <span class="w-6 h-6 rounded-lg bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 flex items-center justify-center text-xs font-extrabold">2</span>
+                                <div>
+                                    <h4 class="text-xs font-black text-slate-100 uppercase tracking-wide">Shoulder-Check Gate Escape</h4>
+                                    <p class="text-[8px] text-slate-500 uppercase tracking-widest font-black">12 Mins · Awareness Scan</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-1.5 bg-slate-950 border border-slate-850 px-2 py-1 rounded-lg">
+                                <span id="time-val-2" class="font-mono text-[10px] font-bold text-slate-300">12:00</span>
+                                <button onclick="toggleDrillTimer(2, 720)" id="t-btn-2" class="text-[8px] px-1.5 py-0.5 bg-yellow-500 text-slate-950 font-black uppercase rounded">Start</button>
+                                <button onclick="resetDrillTimer(2)" class="text-[8px] px-1 py-0.5 bg-slate-800 text-slate-400 rounded hover:text-white" title="Reset"><i class="fa-solid fa-arrow-rotate-left"></i></button>
+                            </div>
+                        </div>
+
+                        <div class="canvas-field">
+                            <canvas id="canv-2" class="w-full h-full block"></canvas>
+                        </div>
+
+                        <p class="text-[10px] text-slate-400 leading-normal bg-slate-950/40 p-2.5 rounded-xl border border-slate-900">
+                            Fire a pass at the wall. While the ball travels, turn your head around to read the color of a cone behind you. Shout it out, receive the rebounce, and turn to the opposite direction of the cone you saw when looking back.
+                        </p>
+
+                        <div class="flex justify-between items-center pt-2 border-t border-slate-850/60">
+                            <span class="text-[9px] font-bold text-slate-500 uppercase">Phase Checked:</span>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="chk-core-2" onchange="toggleCoreDrillCheck(2)" class="sr-only peer">
+                                <div class="w-9 h-5 bg-slate-950 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-slate-700 after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:bg-yellow-500 peer-checked:bg-yellow-950 border border-slate-850"></div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- DRILL 3 -->
+                    <div class="bg-slate-900 border border-slate-850 rounded-2xl p-4 space-y-3 shadow-md" id="p-card-3">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <span class="w-6 h-6 rounded-lg bg-orange-500/10 text-orange-400 border border-orange-500/20 flex items-center justify-center text-xs font-extrabold">3</span>
+                                <div>
+                                    <h4 class="text-xs font-black text-slate-100 uppercase tracking-wide">3-Cone Chaotic Decider</h4>
+                                    <p class="text-[8px] text-slate-500 uppercase tracking-widest font-black">13 Mins · Speed of Thought</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-1.5 bg-slate-950 border border-slate-850 px-2 py-1 rounded-lg">
+                                <span id="time-val-3" class="font-mono text-[10px] font-bold text-slate-300">13:00</span>
+                                <button onclick="toggleDrillTimer(3, 780)" id="t-btn-3" class="text-[8px] px-1.5 py-0.5 bg-orange-500 text-slate-950 font-black uppercase rounded">Start</button>
+                                <button onclick="resetDrillTimer(3)" class="text-[8px] px-1 py-0.5 bg-slate-800 text-slate-400 rounded hover:text-white" title="Reset"><i class="fa-solid fa-arrow-rotate-left"></i></button>
+                            </div>
+                        </div>
+
+                        <div class="canvas-field">
+                            <canvas id="canv-3" class="w-full h-full block"></canvas>
+                        </div>
+
+                        <p class="text-[10px] text-slate-400 leading-normal bg-slate-950/40 p-2.5 rounded-xl border border-slate-900">
+                            Perform a hard pass against the wall. Shout a random number (1-3) on release, take your first touch to that specific numbered cone, and fire back with touch 2.
+                        </p>
+
+                        <div class="flex justify-between items-center pt-2 border-t border-slate-850/60">
+                            <span class="text-[9px] font-bold text-slate-500 uppercase">Phase Checked:</span>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="chk-core-3" onchange="toggleCoreDrillCheck(3)" class="sr-only peer">
+                                <div class="w-9 h-5 bg-slate-950 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-slate-700 after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:bg-orange-500 peer-checked:bg-orange-950 border border-slate-850"></div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- DRILL 4 -->
+                    <div class="bg-slate-900 border border-slate-850 rounded-2xl p-4 space-y-3 shadow-md" id="p-card-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <span class="w-6 h-6 rounded-lg bg-rose-500/10 text-rose-400 border border-rose-500/20 flex items-center justify-center text-xs font-extrabold">4</span>
+                                <div>
+                                    <h4 class="text-xs font-black text-slate-100 uppercase tracking-wide">Heart-Rate Finish & Composure</h4>
+                                    <p class="text-[8px] text-slate-500 uppercase tracking-widest font-black">10 Mins · Fatigue Poacher</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-1.5 bg-slate-950 border border-slate-850 px-2 py-1 rounded-lg">
+                                <span id="time-val-4" class="font-mono text-[10px] font-bold text-slate-300">10:00</span>
+                                <button onclick="toggleDrillTimer(4, 600)" id="t-btn-4" class="text-[8px] px-1.5 py-0.5 bg-rose-500 text-slate-950 font-black uppercase rounded">Start</button>
+                                <button onclick="resetDrillTimer(4)" class="text-[8px] px-1 py-0.5 bg-slate-800 text-slate-400 rounded hover:text-white" title="Reset"><i class="fa-solid fa-arrow-rotate-left"></i></button>
+                            </div>
+                        </div>
+
+                        <div class="canvas-field">
+                            <canvas id="canv-4" class="w-full h-full block"></canvas>
+                        </div>
+
+                        <p class="text-[10px] text-slate-400 leading-normal bg-slate-950/40 p-2.5 rounded-xl border border-slate-900">
+                            Perform 10 rapid tuck-jumps or a sprint. Instantly transition directly to the ball, and execute 10 rapid consecutive one-touch passes against the wall.
+                        </p>
+
+                        <div class="flex justify-between items-center pt-2 border-t border-slate-850/60">
+                            <span class="text-[9px] font-bold text-slate-500 uppercase">Phase Checked:</span>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="chk-core-4" onchange="toggleCoreDrillCheck(4)" class="sr-only peer">
+                                <div class="w-9 h-5 bg-slate-950 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-slate-700 after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:bg-rose-500 peer-checked:bg-rose-950 border border-slate-850"></div>
+                            </label>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Post Session Reflection & Submissions Log -->
+                <div class="bg-slate-900 border border-slate-850 rounded-2xl p-4 space-y-4">
+                    <h4 class="text-xs font-black text-slate-200 uppercase tracking-wider border-b border-slate-850 pb-2"><i class="fa-solid fa-pen-nib text-emerald-500 mr-1"></i> Post-Session Reflection</h4>
+                    
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-[8px] font-bold text-slate-400 uppercase mb-1">How did your ball contacts feel today?</label>
+                            <input id="ref-feel" type="text" placeholder="e.g. Sharp, clean touch, foot locked well." class="w-full bg-slate-950 border border-slate-850 rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500">
+                        </div>
+                        <div>
+                            <label class="block text-[8px] font-bold text-slate-400 uppercase mb-1">What was the hardest aspect?</label>
+                            <input id="ref-hardest" type="text" placeholder="e.g. Looking over shoulders in Phase 2..." class="w-full bg-slate-950 border border-slate-850 rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500">
+                        </div>
+                        <div>
+                            <label class="block text-[8px] font-bold text-slate-400 uppercase mb-1">Exhaustion Panic Rating (1-5)</label>
+                            <div class="grid grid-cols-5 gap-1.5" id="composure-btn-strip">
+                                <button onclick="setComposureScore(1)" id="comp-score-1" class="py-2 bg-slate-950 border border-slate-850 rounded-lg text-xs font-black text-rose-500">1</button>
+                                <button onclick="setComposureScore(2)" id="comp-score-2" class="py-2 bg-slate-950 border border-slate-850 rounded-lg text-xs font-black text-orange-500">2</button>
+                                <button onclick="setComposureScore(3)" id="comp-score-3" class="py-2 bg-slate-950 border border-slate-850 rounded-lg text-xs font-black text-yellow-500">3</button>
+                                <button onclick="setComposureScore(4)" id="comp-score-4" class="py-2 bg-slate-950 border border-slate-850 rounded-lg text-xs font-black text-teal-400">4</button>
+                                <button onclick="setComposureScore(5)" id="comp-score-5" class="py-2 bg-slate-950 border border-slate-850 rounded-lg text-xs font-black text-emerald-400">5</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button onclick="submitTrainingSession()" id="btn-submit-session" disabled class="w-full py-3.5 bg-slate-800 text-slate-500 font-extrabold text-xs uppercase tracking-wider rounded-xl transition-all cursor-not-allowed">
+                        <i class="fa-solid fa-flag-checkered mr-1"></i> Register Session Complete
+                    </button>
+                </div>
+
+            </div>
+
+            <!-- TAB 2: SPECIALIST OPTIONAL DRILLS -->
+            <div id="tab-special" class="space-y-5 tab-view hidden">
+                <div class="bg-gradient-to-tr from-emerald-950/20 to-slate-900 border border-emerald-950/40 rounded-2xl p-4 relative overflow-hidden">
+                    <div class="absolute -top-10 -right-10 w-24 h-24 bg-emerald-500/5 rounded-full blur-xl"></div>
+                    <span class="text-[9px] font-black uppercase text-emerald-400 tracking-wider">Position Specialist</span>
+                    <h3 class="text-base font-black text-slate-100 uppercase tracking-wide mt-1"><span id="special-position-name">CF</span> Drills Toolkit</h3>
+                    <p class="text-[10px] text-slate-400 leading-normal mt-1">Unlock tailored positional challenges matching your dominant profile. Earn bonus coins and progress XP.</p>
+                </div>
+
+                <div id="specialist-drills-list" class="space-y-4">
+                    <!-- Dynamic positional items generated here -->
+                </div>
+            </div>
+
+            <!-- TAB 3: ACADEMY STORE -->
+            <div id="tab-store" class="space-y-5 tab-view hidden">
+                <div class="bg-gradient-to-br from-amber-950/15 to-slate-950 border border-amber-500/20 rounded-2xl p-4 flex items-center justify-between gold-glow">
+                    <div>
+                        <h3 class="text-xs font-black text-amber-500 uppercase tracking-widest"><i class="fa-solid fa-shop"></i> Academy Exchange</h3>
+                        <p class="text-[10px] text-slate-400 mt-0.5">Spend earned coins to buy safety freezes.</p>
+                    </div>
+                    <div class="bg-slate-900 border border-slate-850 px-3 py-1.5 rounded-xl flex items-center gap-1.5">
+                        <i class="fa-solid fa-coins text-amber-500 text-xs animate-bounce"></i>
+                        <span id="store-balance-count" class="text-xs font-black text-amber-400">100</span>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900 border border-slate-850 rounded-2xl p-4 space-y-4">
+                    <h4 class="text-xs font-black text-slate-200 uppercase tracking-wider border-b border-slate-850 pb-2">Available Items</h4>
+                    
+                    <div class="bg-slate-950 border border-slate-850 p-3.5 rounded-xl flex items-center justify-between gap-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-sky-950 text-sky-400 rounded-xl border border-sky-900/40 flex items-center justify-center text-xl">
+                                <i class="fa-solid fa-snowflake"></i>
+                            </div>
+                            <div>
+                                <h5 class="text-xs font-black text-slate-200 uppercase">Streak Freeze Shield</h5>
+                                <span class="text-[9px] text-amber-400 font-extrabold uppercase"><i class="fa-solid fa-coins mr-1"></i>200 Coins</span>
+                            </div>
+                        </div>
+                        <button onclick="buyFreezeShield()" class="py-2 px-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs rounded-xl transition-all shadow-md">
+                            Acquire
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Interactive Push Notification Schedule panel -->
+                <div class="bg-slate-900 border border-slate-850 rounded-2xl p-4 space-y-3">
+                    <h4 class="text-xs font-black text-slate-200 uppercase tracking-wider"><i class="fa-solid fa-bell text-emerald-500 mr-1"></i> Training Reminders</h4>
+                    <p class="text-[10px] text-slate-400 leading-normal">Configure double native push alarms at 6:00 AM and 6:00 PM directly to your home mobile screen.</p>
+                    <div class="grid grid-cols-2 gap-2 pt-1.5">
+                        <button onclick="enableNativeNotifs()" class="py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs rounded-xl uppercase tracking-wider transition-all flex items-center justify-center gap-1">
+                            <i class="fa-solid fa-circle-check"></i> Allow Alerts
+                        </button>
+                        <button onclick="testNotifSound()" class="py-2.5 bg-slate-950 hover:bg-slate-900 border border-slate-850 text-slate-300 font-bold text-xs rounded-xl uppercase tracking-wider transition-all flex items-center justify-center gap-1">
+                            <i class="fa-solid fa-bell"></i> Send Test
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: ACHIEVEMENTS & STATISTICS -->
+            <div id="tab-stats" class="space-y-5 tab-view hidden">
+                
+                <!-- Rank progress metrics panel -->
+                <div class="bg-slate-900 border border-slate-850 rounded-2xl p-4 space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-black text-slate-300 uppercase tracking-wider">Player Development Rank</span>
+                        <span class="text-[9px] font-mono text-emerald-400 font-bold"><span id="stats-xp-display">0</span>/100 XP</span>
+                    </div>
+                    <div class="w-full h-2.5 bg-slate-950 rounded-full overflow-hidden border border-slate-850">
+                        <div id="stats-xp-progress" class="h-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                    <div class="flex justify-between items-center pt-1 text-[9px] text-slate-400 uppercase font-extrabold">
+                        <span>Level <span id="stats-lvl">1</span> Prospect</span>
+                        <span>Level <span id="stats-next-lvl">2</span> Captain</span>
+                    </div>
+                </div>
+
+                <!-- Trophies Unlock lists -->
+                <div class="bg-slate-900 border border-slate-850 rounded-2xl p-4 space-y-3">
+                    <h4 class="text-xs font-black text-slate-200 uppercase tracking-wider border-b border-slate-850 pb-2"><i class="fa-solid fa-trophy text-amber-500 mr-1"></i> Unlockable Achievements</h4>
+                    
+                    <div class="space-y-2.5" id="achievements-list">
+                        <!-- Trophy 1 -->
+                        <div class="bg-slate-950 border border-slate-850 p-3 rounded-xl flex items-center gap-3" id="trophy-card-1">
+                            <div class="w-9 h-9 bg-slate-900 rounded-lg flex items-center justify-center text-base" id="trophy-icon-1">🏆</div>
+                            <div>
+                                <h5 class="text-xs font-black text-slate-200 uppercase">First Touch Graduate</h5>
+                                <p class="text-[9px] text-slate-500 mt-0.5">Register your very first complete 45-min workout cycle.</p>
+                            </div>
+                        </div>
+                        <!-- Trophy 2 -->
+                        <div class="bg-slate-950 border border-slate-850 p-3 rounded-xl flex items-center gap-3" id="trophy-card-2">
+                            <div class="w-9 h-9 bg-slate-900 rounded-lg flex items-center justify-center text-base" id="trophy-icon-2">🛡️</div>
+                            <div>
+                                <h5 class="text-xs font-black text-slate-200 uppercase">Streak Defended</h5>
+                                <p class="text-[9px] text-slate-500 mt-0.5">Acquire 1 Streak Freeze protection shield from the shop.</p>
+                            </div>
+                        </div>
+                        <!-- Trophy 3 -->
+                        <div class="bg-slate-950 border border-slate-850 p-3 rounded-xl flex items-center gap-3" id="trophy-card-3">
+                            <div class="w-9 h-9 bg-slate-900 rounded-lg flex items-center justify-center text-base" id="trophy-icon-3">🔥</div>
+                            <div>
+                                <h5 class="text-xs font-black text-slate-200 uppercase">Prolific Striker</h5>
+                                <p class="text-[9px] text-slate-500 mt-0.5">Build up an active streak count of 3 consecutive training days.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Coach Fenrir Connection and AI tools -->
+                <div class="bg-gradient-to-tr from-emerald-950/20 to-slate-950 border border-emerald-500/10 rounded-2xl p-4 space-y-3 relative overflow-hidden">
+                    <div class="absolute -top-10 -right-10 w-24 h-24 bg-emerald-500/5 rounded-full blur-xl"></div>
+                    <h4 class="text-xs font-black text-emerald-400 uppercase tracking-widest"><i class="fa-solid fa-microphone-lines mr-1.5 animate-pulse"></i> Tactical AI Center</h4>
+                    <p class="text-[10px] text-slate-400 leading-normal">Speak directly to Coach Fenrir or get a deep technical performance analysis utilizing your current stats.</p>
+                    
+                    <div class="grid grid-cols-2 gap-2 pt-1.5">
+                        <button onclick="requestAIVoicePepTalk()" id="btn-audio-talk" class="py-2.5 bg-emerald-500 text-slate-950 font-black text-xs rounded-xl uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-md">
+                            <i class="fa-solid fa-volume-high"></i> Pep Talk
+                        </button>
+                        <button onclick="runAITacticalDebrief()" id="btn-text-debrief" class="py-2.5 bg-slate-900 text-emerald-400 border border-emerald-500/20 font-bold text-xs rounded-xl uppercase tracking-wider flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-brain"></i> Debrief
+                        </button>
+                    </div>
+
+                    <div id="ai-broadcast-status" class="hidden text-[9px] text-center text-slate-500 italic mt-2 animate-pulse">Analyzing...</div>
+
+                    <div id="ai-report-board" class="hidden bg-slate-950 border border-slate-850 rounded-xl p-3 text-[10px] space-y-1.5 mt-3">
+                        <div class="flex items-center justify-between border-b border-slate-850 pb-1 mb-1">
+                            <span class="text-[8px] font-black text-emerald-400 uppercase">Technical Directives</span>
+                            <span class="text-[8px] text-slate-500">Coach Fenrir</span>
+                        </div>
+                        <div id="ai-report-text-area" class="text-slate-300 leading-relaxed space-y-1"></div>
+                    </div>
+                </div>
+
+                <div class="bg-rose-950/20 border border-rose-900/20 rounded-2xl p-4 flex items-center justify-between">
+                    <div>
+                        <h4 class="text-xs font-black text-rose-400 uppercase">Clear Academy Logs</h4>
+                        <p class="text-[9px] text-slate-500">Formulate and delete local statistics history.</p>
+                    </div>
+                    <button onclick="confirmResetStats()" class="py-2 px-3 bg-rose-950/40 hover:bg-rose-900/50 text-rose-400 hover:text-rose-300 text-xs font-bold border border-rose-900/30 rounded-lg uppercase tracking-wider transition-all">
+                        Reset All
+                    </button>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Sticky Footer Navigation Bar strictly tucked away -->
+        <nav class="absolute bottom-0 left-0 right-0 h-16 bg-slate-950 border-t border-slate-900 flex items-center justify-around z-45">
+            <button onclick="switchTab('workout')" id="nav-workout" class="flex-1 h-full flex flex-col items-center justify-center gap-1 text-slate-500 hover:text-slate-300 transition-all active-tab">
+                <i class="fa-solid fa-dumbbell text-base transition-transform"></i>
+                <span class="text-[8px] font-extrabold uppercase tracking-widest">Training</span>
+            </button>
+            <button onclick="switchTab('special')" id="nav-special" class="flex-1 h-full flex flex-col items-center justify-center gap-1 text-slate-500 hover:text-slate-300 transition-all">
+                <i class="fa-solid fa-bullseye text-base transition-transform"></i>
+                <span class="text-[8px] font-extrabold uppercase tracking-widest">Optional</span>
+            </button>
+            <button onclick="switchTab('stats')" id="nav-stats" class="flex-1 h-full flex flex-col items-center justify-center gap-1 text-slate-500 hover:text-slate-300 transition-all">
+                <i class="fa-solid fa-chart-line text-base transition-transform"></i>
+                <span class="text-[8px] font-extrabold uppercase tracking-widest">Progress</span>
+            </button>
+            <button onclick="switchTab('store')" id="nav-store" class="flex-1 h-full flex flex-col items-center justify-center gap-1 text-slate-500 hover:text-slate-300 transition-all">
+                <i class="fa-solid fa-cart-shopping text-base transition-transform"></i>
+                <span class="text-[8px] font-extrabold uppercase tracking-widest">Store</span>
+            </button>
+        </nav>
+
+        <!-- Custom Warning/Confirmation Reset Overlay Screen -->
+        <div id="modal-reset" class="fixed inset-0 bg-slate-950/90 backdrop-blur-sm flex items-center justify-center p-4 z-55 hidden">
+            <div class="bg-slate-900 border border-slate-850 rounded-2xl p-5 max-w-xs w-full text-center space-y-4">
+                <h4 class="text-sm font-black text-rose-500 uppercase tracking-wide">Format Academy Records?</h4>
+                <p class="text-[11px] text-slate-400 leading-normal">This completely resets all earned coins, level milestones, position options, and current training streaks to zero.</p>
+                <div class="flex gap-2">
+                    <button onclick="executeTotalReset()" class="flex-1 py-2 bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold rounded-lg uppercase tracking-wider">Reset</button>
+                    <button onclick="closeResetModal()" class="flex-1 py-2 bg-slate-950 hover:bg-slate-900 border border-slate-850 text-slate-400 text-xs font-bold rounded-lg uppercase tracking-wider">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Timer Horn Alert Overlay Screen -->
+        <div id="modal-horn" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4 z-55 hidden">
+            <div class="bg-slate-900 border-2 border-emerald-500/30 rounded-3xl p-6 max-w-xs w-full text-center space-y-4">
+                <div class="w-12 h-12 bg-emerald-500 text-slate-950 rounded-full flex items-center justify-center text-xl mx-auto pulse-active">
+                    <i class="fa-solid fa-volume-high"></i>
+                </div>
+                <h4 id="horn-title" class="text-base font-black text-slate-100 uppercase">Phase Finished!</h4>
+                <p class="text-[10px] text-slate-400 leading-normal">Loud acoustic alarm sounded! Check off this drill to earn progress score metrics.</p>
+                <button onclick="confirmHornMarkDone()" class="w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs uppercase tracking-wider rounded-xl transition-all">
+                    Acknowledge Done
+                </button>
+            </div>
+        </div>
+
+        <!-- Custom Toast Container -->
+        <div id="toast-carrier" class="absolute bottom-20 left-4 right-4 z-50 flex flex-col gap-1.5 pointer-events-none"></div>
+
+    </div>
+
+    <script>
+        // HARD-CODED API KEY AS REQUESTED BY USER
+        const API_KEY = "AIzaSyDUwl2uGj8rLVrYILZW8Zbi2On6d6QiLBY";
+
+        // Global State Tree
+        let userState = {
+            signedIn: false,
+            name: "",
+            height: "",
+            foot: "Right",
+            position: "CF",
+            coins: 100,
+            streak: 0,
+            freezes: 1,
+            xp: 0,
+            level: 1,
+            completedCore: { 1: false, 2: false, 3: false, 4: false },
+            completedSpecial: {},
+            lastCompletedDate: null,
+            lastLoginDate: null,
+            consecutiveMissedDays: 0,
+            composure: 0,
+            historyLog: {} // Format: { "YYYY-MM-DD": "completed" }
+        };
+
+        // Live Countdown Clock Trees
+        let activeTimers = {
+            1: { remaining: 600, duration: 600, interval: null, active: false },
+            2: { remaining: 720, duration: 720, interval: null, active: false },
+            3: { remaining: 780, duration: 780, interval: null, active: false },
+            4: { remaining: 600, duration: 600, interval: null, active: false },
+            "s1": { remaining: 480, duration: 480, interval: null, active: false },
+            "s2": { remaining: 480, duration: 480, interval: null, active: false },
+            "s3": { remaining: 480, duration: 480, interval: null, active: false },
+            "s4": { remaining: 480, duration: 480, interval: null, active: false },
+            "s5": { remaining: 480, duration: 480, interval: null, active: false }
+        };
+
+        let selectedOnboardingPos = "CF";
+        let activeTimerPhase = null;
+        let runningAudioClip = null;
+        let animationFrames = {};
+
+        // 5 Custom drills configured for each tactical profile choice
+        const specialistDrillsManifest = {
+            CF: [
+                { id: "s1", title: "Near-Post Box Steal", duration: 480, desc: "Rebound off the wall from 4m at a 45-degree angle. Instantly turn your hips on first touch and strike a small target with your second touch." },
+                { id: "s2", title: "Physical Back-To-Goal Shield", duration: 480, desc: "Toss the ball in the air against the wall. Catch it on your chest or thigh, turn hard, use your arm to hold off an imaginary defender, and slide home." },
+                { id: "s3", title: "One-Touch Poaching Sweep", duration: 480, desc: "Place 3 rebound walls or targets. Rapidly cycle through receiving, pivoting on one foot, and firing one-touch snapshots against the targets." },
+                { id: "s4", title: "Dynamic Header Aerial Flight", duration: 480, desc: "Lob ball high above shoulder height against the wall. Leap with high knee elevation to nod down firmly into ground target gateways." },
+                { id: "s5", title: "Defensive Press Escape Trigger", duration: 480, desc: "Perform a hard drag-back roll with your sole, fake left, explode right, and execute a quick snapshot under 1.2 seconds." }
+            ],
+            SS: [
+                { id: "s1", title: "Half-Space Late Run Lift", duration: 480, desc: "Pass hard to the wall. Drop back 3 paces as it travels, meet the rebound at speed, and chip cleanly over an intermediate cone." },
+                { id: "s2", title: "Pocket-Receive Half-Turn Turn", duration: 480, desc: "Receive ball with the back foot inside a simulated pocket, complete a rapid 180-degree blind-turn, and drive a low pass with your weak foot." },
+                { id: "s3", title: "Deceptive Pivot Wall Lay-off", duration: 480, desc: "Perform a quick pass. On the rebound, complete a first-time backheel pass or flick to an alternate side gateway target." },
+                { id: "s4", title: "Edge of Box Curved Finesse", duration: 480, desc: "Receive rebounds, carry wide diagonally across the top of the box, and strike with high inside-foot curvature into the corner target." },
+                { id: "s5", title: "Rapid One-Two Bounce Assist", duration: 480, desc: "Cycle high-intensity wall passes with alternating left/right sweeps continuously without allowing the ball to stop spinning." }
+            ],
+            LW: [
+                { id: "s1", title: "Inside-Cut Robben Sweep", duration: 480, desc: "Drive ball down a simulated touchline, slash sharply inside with the sole of your right foot, and whip a curled cross into the far zone." },
+                { id: "s2", title: "Line Escape Step-Over Burst", duration: 480, desc: "Stand near the wall boundary. Throw a self-pass, perform a quick step-over fake, and explode down the line using your left foot." },
+                { id: "s3", title: "High Back-post Cross Trap", duration: 480, desc: "Lob a high lofted pass against the wall. Absorb maximum pace using the outside of your left boot, and settle instantly." },
+                { id: "s4", title: "Overlapping Run Low Drive", duration: 480, desc: "Slay a long rolling pass against the wall, run onto the moving ball, and fire a low driven cut-back cross first time." },
+                { id: "s5", title: "Isolated Touchline Roll Escape", duration: 480, desc: "Perform rapid double-sole rolls parallel to the wall, immediately execute a quick directional shift, and pop the ball over a cone." }
+            ],
+            RW: [
+                { id: "s1", title: "Down-The-Line Winger Blast", duration: 480, desc: "Slam ball forward, run onto it, and release an instant weak-foot (left) lofted delivery or cross towards a target zone." },
+                { id: "s2", title: "Opposite In-Cut Cutback Driver", duration: 480, desc: "Slash from right to left, roll the ball with your sole, and drop a low reverse pass diagonally behind your back." },
+                { id: "s3", title: "High Air-Drop In-Step Settle", duration: 480, desc: "Receive looping air balls with a soft, cushioning inside-of-foot contact without letting the ball bounce more than once." },
+                { id: "s4", title: "Rapid Overlap Double Step", duration: 480, desc: "Execute rapid scissors fakes in front of a cone, shift weight, and slice a low pass against the wall." },
+                { id: "s5", title: "Corner Flag Shield Pivot", duration: 480, desc: "Shield the ball at a simulated corner flag, roll around an imaginary defender, and release a quick trivela pass." }
+            ]
+        };
+
+        // Window Initializer
+        window.onload = function() {
+            loadUserProfile();
+            checkStreakFreezes();
+            updateGlobalUI();
+            setupDrillAnimations();
+            checkDailyLootTrigger();
+        };
+
+        // ----------------- PROFILE STORAGE -----------------
+        function saveUserProfile() {
+            localStorage.setItem('inst_forward_v3_state', JSON.stringify(userState));
+        }
+
+        function loadUserProfile() {
+            const saved = localStorage.getItem('inst_forward_v3_state');
+            if (saved) {
+                userState = JSON.parse(saved);
+            }
+            if (!userState.signedIn) {
+                document.getElementById('onboarding-screen').classList.remove('hidden');
+            } else {
+                document.getElementById('onboarding-screen').classList.add('hidden');
+            }
+        }
+
+        function selectOnboardingPosition(pos) {
+            selectedOnboardingPos = pos;
+            ["CF", "SS", "LW", "RW"].forEach(p => {
+                const btn = document.getElementById(`pos-btn-${p}`);
+                if (p === pos) {
+                    btn.classList.add('border-emerald-500', 'bg-emerald-950/20');
+                    btn.classList.remove('border-slate-800', 'bg-slate-900');
+                } else {
+                    btn.classList.remove('border-emerald-500', 'bg-emerald-950/20');
+                    btn.classList.add('border-slate-800', 'bg-slate-900');
+                }
+            });
+        }
+
+        function submitOnboarding() {
+            const nameVal = document.getElementById('ob-name').value.trim();
+            const heightVal = document.getElementById('ob-height').value.trim();
+            const footVal = document.getElementById('ob-foot').value;
+
+            if (!nameVal || !heightVal) {
+                displayToast("Please fill in your name and height.", "error");
+                return;
+            }
+
+            userState.name = nameVal;
+            userState.height = heightVal;
+            userState.foot = footVal;
+            userState.position = selectedOnboardingPos;
+            userState.signedIn = true;
+            userState.coins = 100;
+            userState.freezes = 1;
+            userState.xp = 0;
+            userState.level = 1;
+            userState.streak = 0;
+            userState.completedCore = { 1: false, 2: false, 3: false, 4: false };
+            userState.completedSpecial = {};
+            userState.historyLog = {};
+            userState.lastLoginDate = getFormattedTodayDate();
+
+            saveUserProfile();
+            updateGlobalUI();
+            
+            document.getElementById('onboarding-screen').classList.add('hidden');
+            playChirpAudio('levelup');
+            displayToast(`Welcome to the Academy, ${nameVal}!`, "success");
+        }
+
+        function checkDailyLootTrigger() {
+            if (!userState.signedIn) return;
+            const today = getFormattedTodayDate();
+            if (userState.lastLoginDate !== today) {
+                userState.lastLoginDate = today;
+                userState.coins += 20;
+                addXPPoints(30);
+                saveUserProfile();
+                updateGlobalUI();
+                setTimeout(() => {
+                    playChirpAudio('coin');
+                    displayToast("Daily Login Bonus Claimed! +20 Coins & +30 XP!", "success");
+                }, 1000);
+            }
+        }
+
+        // ----------------- STREAK PROTECTION SYSTEMS -----------------
+        function checkStreakFreezes() {
+            if (!userState.signedIn || !userState.lastCompletedDate) return;
+
+            const today = new Date();
+            const lastCompleted = new Date(userState.lastCompletedDate);
+            today.setHours(0,0,0,0);
+            lastCompleted.setHours(0,0,0,0);
+
+            let missedDays = 0;
+            let tempDate = new Date(lastCompleted);
+            tempDate.setDate(tempDate.getDate() + 1);
+
+            while (tempDate < today) {
+                if (tempDate.getDay() !== 0) { // Skip Sundays
+                    missedDays++;
+                }
+                tempDate.setDate(tempDate.getDate() + 1);
+            }
+
+            userState.consecutiveMissedDays = missedDays;
+
+            // Trigger freeze auto-consumption
+            if (userState.consecutiveMissedDays >= 3) {
+                if (userState.freezes > 0) {
+                    userState.freezes -= 1;
+                    userState.consecutiveMissedDays = 2; // Keep at safe margin
+                    playChirpAudio('freeze');
+                    displayToast("Streak Freeze Shield consumed automatically to protect streak!", "success");
+                } else {
+                    userState.streak = 0;
+                    userState.consecutiveMissedDays = 3;
+                    displayToast("Streak broken! Complete a full cycle to start again.", "error");
+                }
+            }
+            saveUserProfile();
+        }
+
+        // ----------------- UI SYNTAX GENERATORS -----------------
+        function updateGlobalUI() {
+            if (!userState.signedIn) return;
+
+            // Header Elements
+            document.getElementById('header-user-name').innerText = userState.name;
+            document.getElementById('header-pos-tag').innerText = userState.position;
+            document.getElementById('header-lvl-num').innerText = userState.level;
+            document.getElementById('header-coins').innerText = userState.coins;
+            document.getElementById('header-streak-count').innerText = userState.streak;
+
+            // Store screen
+            document.getElementById('store-balance-count').innerText = userState.coins;
+            document.getElementById('home-freezes-count').innerText = userState.freezes;
+
+            // Main screen metrics
+            document.getElementById('streak-score-hero').innerText = userState.streak;
+
+            // Achievements Elements
+            document.getElementById('stats-lvl').innerText = userState.level;
+            document.getElementById('stats-next-lvl').innerText = userState.level + 1;
+            document.getElementById('stats-xp-display').innerText = userState.xp;
+            document.getElementById('stats-xp-progress').style.width = `${userState.xp}%`;
+
+            // Active Special Position Label
+            document.getElementById('special-position-name').innerText = userState.position;
+
+            updateCalendarWeekDisplay();
+            updateTrophyUnlocks();
+            renderSpecialistDrillsList();
+            checkWorkoutSubmissionButton();
+        }
+
+        function updateCalendarWeekDisplay() {
+            let done = 0;
+            for (let i = 1; i <= 6; i++) {
+                const dot = document.getElementById(`chk-dot-${i}`);
+                const dayDiv = document.getElementById(`cal-${i}`);
+                const dateOfThisDay = getLocalDateOfThisWeekday(i);
+                const dateKey = getFormattedDateString(dateOfThisDay);
+
+                if (userState.historyLog && userState.historyLog[dateKey] === 'completed') {
+                    dayDiv.className = "p-1.5 bg-emerald-950/25 border border-emerald-500/20 rounded-lg flex flex-col items-center gap-1 shadow-inner";
+                    dot.className = "w-3.5 h-3.5 rounded-full bg-emerald-500 text-slate-950 flex items-center justify-center text-[7px] font-black";
+                    dot.innerHTML = '<i class="fa-solid fa-check"></i>';
+                    done++;
+                } else {
+                    dayDiv.className = "p-1.5 bg-slate-950 border border-slate-850 rounded-lg flex flex-col items-center gap-1";
+                    dot.className = "w-3.5 h-3.5 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-[7px] text-slate-700 font-bold";
+                    dot.innerHTML = '<i class="fa-solid fa-circle text-[4px]"></i>';
+                }
+            }
+            document.getElementById('cal-ratio').innerText = `${done}/6 Workouts Done`;
+        }
+
+        function updateTrophyUnlocks() {
+            // Trophy 1: Completed workout
+            const t1 = document.getElementById('trophy-card-1');
+            const icon1 = document.getElementById('trophy-icon-1');
+            const workoutsRecorded = Object.values(userState.historyLog).filter(v => v === 'completed').length;
+            if (workoutsRecorded > 0) {
+                t1.className = "bg-emerald-950/20 border border-emerald-500/20 p-3 rounded-xl flex items-center gap-3";
+                icon1.innerText = "🏆";
+            } else {
+                t1.className = "bg-slate-950 border border-slate-850 p-3 rounded-xl flex items-center gap-3 opacity-50";
+                icon1.innerText = "🔒";
+            }
+
+            // Trophy 2: Shield purchased
+            const t2 = document.getElementById('trophy-card-2');
+            const icon2 = document.getElementById('trophy-icon-2');
+            if (userState.freezes > 1) {
+                t2.className = "bg-emerald-950/20 border border-emerald-500/20 p-3 rounded-xl flex items-center gap-3";
+                icon2.innerText = "🛡️";
+            } else {
+                t2.className = "bg-slate-950 border border-slate-850 p-3 rounded-xl flex items-center gap-3 opacity-50";
+                icon2.innerText = "🔒";
+            }
+
+            // Trophy 3: Streak > 3
+            const t3 = document.getElementById('trophy-card-3');
+            const icon3 = document.getElementById('trophy-icon-3');
+            if (userState.streak >= 3) {
+                t3.className = "bg-emerald-950/20 border border-emerald-500/20 p-3 rounded-xl flex items-center gap-3";
+                icon3.innerText = "🔥";
+            } else {
+                t3.className = "bg-slate-950 border border-slate-850 p-3 rounded-xl flex items-center gap-3 opacity-50";
+                icon3.innerText = "🔒";
+            }
+        }
+
+        function renderSpecialistDrillsList() {
+            const listContainer = document.getElementById('specialist-drills-list');
+            listContainer.innerHTML = "";
+
+            const drills = specialistDrillsManifest[userState.position] || [];
+            drills.forEach((drill, index) => {
+                const isCompleted = userState.completedSpecial[drill.id] || false;
+                const card = document.createElement('div');
+                card.className = "bg-slate-900 border border-slate-850 rounded-2xl p-4 space-y-3 shadow-md";
+                card.id = `specialist-card-${drill.id}`;
+
+                // Formulate countdown element values
+                const currentTimerState = activeTimers[drill.id];
+                const minutes = Math.floor(currentTimerState.remaining / 60);
+                const seconds = currentTimerState.remaining % 60;
+                const timeString = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+                card.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="w-6 h-6 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center text-xs font-extrabold">${index + 1}</span>
+                            <div>
+                                <h4 class="text-xs font-black text-slate-100 uppercase tracking-wide">${drill.title}</h4>
+                                <p class="text-[8px] text-slate-500 uppercase tracking-widest font-black">8 Mins · Dynamic Tactical drill</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-1.5 bg-slate-950 border border-slate-850 px-2 py-1 rounded-lg">
+                            <span id="time-val-${drill.id}" class="font-mono text-[10px] font-bold text-slate-300">${timeString}</span>
+                            <button onclick="toggleSpecialistTimer('${drill.id}', 480)" id="t-btn-${drill.id}" class="text-[8px] px-1.5 py-0.5 bg-emerald-500 text-slate-950 font-black uppercase rounded">Start</button>
+                            <button onclick="resetSpecialistTimer('${drill.id}')" class="text-[8px] px-1 py-0.5 bg-slate-800 text-slate-400 rounded hover:text-white" title="Reset"><i class="fa-solid fa-arrow-rotate-left"></i></button>
+                        </div>
+                    </div>
+                    <p class="text-[10px] text-slate-400 leading-normal bg-slate-950/40 p-2.5 rounded-xl border border-slate-900">${drill.desc}</p>
+                    <div class="flex justify-between items-center pt-2 border-t border-slate-850/60">
+                        <span class="text-[9px] font-bold text-slate-500 uppercase">Optional Completion Mark:</span>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="chk-special-${drill.id}" ${isCompleted ? 'checked' : ''} onchange="toggleSpecialDrillCheck('${drill.id}')" class="sr-only peer">
+                            <div class="w-9 h-5 bg-slate-950 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-slate-700 after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:bg-emerald-500 peer-checked:bg-emerald-950 border border-slate-850"></div>
+                        </label>
+                    </div>
+                `;
+                listContainer.appendChild(card);
+            });
+        }
+
+        // ----------------- TAB NAVIGATION ENGINE -----------------
+        function switchTab(tabId) {
+            ["workout", "special", "store", "stats"].forEach(t => {
+                const section = document.getElementById(`tab-${t}`);
+                const btn = document.getElementById(`nav-${t}`);
+                if (t === tabId) {
+                    section.classList.remove('hidden');
+                    btn.classList.add('active-tab');
+                } else {
+                    section.classList.add('hidden');
+                    btn.classList.remove('active-tab');
+                }
+            });
+
+            // Re-render and match size metrics of canvases on tab display
+            if (tabId === 'workout') {
+                setTimeout(setupDrillAnimations, 100);
+            }
+        }
+
+        // ----------------- DYNAMIC TIMERS & SIRENS -----------------
+        function toggleDrillTimer(phase, defaultSec) {
+            const state = activeTimers[phase];
+            const btn = document.getElementById(`t-btn-${phase}`);
+
+            if (state.active) {
+                clearInterval(state.interval);
+                state.active = false;
+                btn.innerText = "Resume";
+                btn.className = "text-[8px] px-1.5 py-0.5 bg-slate-800 text-slate-300 font-black uppercase rounded";
+            } else {
+                state.active = true;
+                btn.innerText = "Pause";
+                btn.className = "text-[8px] px-1.5 py-0.5 bg-yellow-500 text-slate-950 font-black uppercase rounded";
+
+                state.interval = setInterval(() => {
+                    if (state.remaining > 0) {
+                        state.remaining--;
+                        updateDrillDisplay(phase);
+                    } else {
+                        clearInterval(state.interval);
+                        state.active = false;
+                        btn.innerText = "Complete";
+                        btn.className = "text-[8px] px-1.5 py-0.5 bg-emerald-950 text-emerald-400 font-black uppercase rounded border border-emerald-900/40";
+                        triggerLoudRefereeWhistle(phase);
+                    }
+                }, 1000);
+            }
+        }
+
+        function resetDrillTimer(phase) {
+            const state = activeTimers[phase];
+            clearInterval(state.interval);
+            state.active = false;
+            state.remaining = state.duration;
+            updateDrillDisplay(phase);
+
+            const btn = document.getElementById(`t-btn-${phase}`);
+            btn.innerText = "Start";
+            btn.className = "text-[8px] px-1.5 py-0.5 bg-emerald-500 text-slate-950 font-black uppercase rounded";
+        }
+
+        function updateDrillDisplay(phase) {
+            const sec = activeTimers[phase].remaining;
+            const m = Math.floor(sec / 60);
+            const s = sec % 60;
+            document.getElementById(`time-val-${phase}`).innerText = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        }
+
+        // specialist timers
+        function toggleSpecialistTimer(id, defaultSec) {
+            const state = activeTimers[id];
+            const btn = document.getElementById(`t-btn-${id}`);
+
+            if (state.active) {
+                clearInterval(state.interval);
+                state.active = false;
+                btn.innerText = "Resume";
+                btn.className = "text-[8px] px-1.5 py-0.5 bg-slate-800 text-slate-300 font-black uppercase rounded";
+            } else {
+                state.active = true;
+                btn.innerText = "Pause";
+                btn.className = "text-[8px] px-1.5 py-0.5 bg-yellow-500 text-slate-950 font-black uppercase rounded";
+
+                state.interval = setInterval(() => {
+                    if (state.remaining > 0) {
+                        state.remaining--;
+                        const m = Math.floor(state.remaining / 60);
+                        const s = state.remaining % 60;
+                        document.getElementById(`time-val-${id}`).innerText = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+                    } else {
+                        clearInterval(state.interval);
+                        state.active = false;
+                        btn.innerText = "Complete";
+                        btn.className = "text-[8px] px-1.5 py-0.5 bg-emerald-950 text-emerald-400 font-black uppercase rounded border border-emerald-900/40";
+                        triggerLoudRefereeWhistle(id);
+                    }
+                }, 1000);
+            }
+        }
+
+        function resetSpecialistTimer(id) {
+            const state = activeTimers[id];
+            clearInterval(state.interval);
+            state.active = false;
+            state.remaining = state.duration;
+            const m = Math.floor(state.remaining / 60);
+            const s = state.remaining % 60;
+            document.getElementById(`time-val-${id}`).innerText = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+
+            const btn = document.getElementById(`t-btn-${id}`);
+            btn.innerText = "Start";
+            btn.className = "text-[8px] px-1.5 py-0.5 bg-emerald-500 text-slate-950 font-black uppercase rounded";
+        }
+
+        // ----------------- SYNTHESIZE REFEREE SIREN -----------------
+        function triggerLoudRefereeWhistle(phaseId) {
+            activeTimerPhase = phaseId;
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const now = audioCtx.currentTime;
+
+                function whistleBlast(time, delay) {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = "sawtooth";
+                    osc.frequency.setValueAtTime(800, time + delay);
+                    osc.frequency.exponentialRampToValueAtTime(1400, time + delay + 0.15);
+                    osc.frequency.setValueAtTime(1400, time + delay + 0.15);
+                    osc.frequency.exponentialRampToValueAtTime(800, time + delay + 0.3);
+
+                    gain.gain.setValueAtTime(0, time + delay);
+                    gain.gain.linearRampToValueAtTime(0.4, time + delay + 0.05);
+                    gain.gain.linearRampToValueAtTime(0.4, time + delay + 0.25);
+                    gain.gain.linearRampToValueAtTime(0, time + delay + 0.3);
+
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(time + delay);
+                    osc.stop(time + delay + 0.3);
+                }
+
+                // Standard soccer referee double-blast
+                whistleBlast(now, 0);
+                whistleBlast(now, 0.45);
+            } catch (err) {
+                console.warn("Audio synthesis failed", err);
+            }
+
+            // Display native modal instead of popups
+            document.getElementById('horn-title').innerText = `Phase ${phaseId} Completed!`;
+            document.getElementById('modal-horn').classList.remove('hidden');
+        }
+
+        function confirmHornMarkDone() {
+            document.getElementById('modal-horn').classList.add('hidden');
+            const p = activeTimerPhase;
+            if (p) {
+                if (typeof p === 'number') {
+                    const chk = document.getElementById(`chk-core-${p}`);
+                    if (chk) {
+                        chk.checked = true;
+                        toggleCoreDrillCheck(p);
+                    }
+                } else {
+                    const chk = document.getElementById(`chk-special-${p}`);
+                    if (chk) {
+                        chk.checked = true;
+                        toggleSpecialDrillCheck(p);
+                    }
+                }
+            }
+        }
+
+        // ----------------- WORKOUT LOGIC AND SUBMISSIONS -----------------
+        function toggleCoreDrillCheck(phase) {
+            const chk = document.getElementById(`chk-core-${phase}`);
+            userState.completedCore[phase] = chk.checked;
+            saveUserProfile();
+            checkWorkoutSubmissionButton();
+        }
+
+        function toggleSpecialDrillCheck(id) {
+            const chk = document.getElementById(`chk-special-${id}`);
+            userState.completedSpecial[id] = chk.checked;
+            
+            if (chk.checked) {
+                userState.coins += 15;
+                addXPPoints(40);
+                displayToast("Optional Specialist Drill Complete! +15 Coins, +40 XP!", "success");
+            }
+
+            saveUserProfile();
+            updateGlobalUI();
+        }
+
+        function checkWorkoutSubmissionButton() {
+            const btn = document.getElementById('btn-submit-session');
+            const allChecked = Object.values(userState.completedCore).every(val => val === true);
+
+            if (allChecked) {
+                btn.disabled = false;
+                btn.className = "w-full py-3.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs uppercase tracking-wider rounded-xl transition-all shadow-lg shadow-emerald-500/20 cursor-pointer";
+            } else {
+                btn.disabled = true;
+                btn.className = "w-full py-3.5 bg-slate-800 text-slate-500 font-extrabold text-xs uppercase tracking-wider rounded-xl transition-all cursor-not-allowed";
+            }
+        }
+
+        function setComposureScore(score) {
+            userState.composure = score;
+            for (let i = 1; i <= 5; i++) {
+                const btn = document.getElementById(`comp-score-${i}`);
+                if (i === score) {
+                    btn.className = "py-2 bg-slate-800 border-2 border-emerald-500 rounded-lg text-xs font-black text-emerald-400 scale-105 shadow-inner transition-all";
+                } else {
+                    btn.className = "py-2 bg-slate-950 border border-slate-850 rounded-lg text-xs font-bold text-slate-500 hover:text-slate-300 transition-all";
+                }
+            }
+            saveUserProfile();
+        }
+
+        function submitTrainingSession() {
+            const allChecked = Object.values(userState.completedCore).every(val => val === true);
+            if (!allChecked) return;
+
+            const todayKey = getFormattedTodayDate();
+
+            if (userState.historyLog[todayKey] === 'completed') {
+                displayToast("You have already logged a completion today. Rest up!", "info");
+                return;
+            }
+
+            userState.streak += 1;
+            userState.lastCompletedDate = todayKey;
+            userState.historyLog[todayKey] = 'completed';
+            userState.consecutiveMissedDays = 0;
+            
+            // Completion bounty rewards
+            userState.coins += 50;
+            addXPPoints(100);
+
+            // Clean checkboxes for next session
+            for (let i = 1; i <= 4; i++) {
+                const chk = document.getElementById(`chk-core-${i}`);
+                if (chk) chk.checked = false;
+                userState.completedCore[i] = false;
+            }
+
+            saveUserProfile();
+            updateGlobalUI();
+            playChirpAudio('levelup');
+            displayToast(`🔥 Workout Registered! Streak is now ${userState.streak}! Earned +50 Coins & +100 XP!`, "success");
+        }
+
+        function addXPPoints(amount) {
+            userState.xp += amount;
+            if (userState.xp >= 100) {
+                userState.xp = userState.xp % 100;
+                userState.level += 1;
+                playChirpAudio('levelup');
+                displayToast(`🎉 LEVEL UP! You are now Level ${userState.level}!`, "success");
+            }
+        }
+
+        function buyFreezeShield() {
+            if (userState.coins >= 200) {
+                userState.coins -= 200;
+                userState.freezes += 1;
+                playChirpAudio('purchase');
+                saveUserProfile();
+                updateGlobalUI();
+                displayToast("Acquired 1 Streak Freeze protection shield!", "success");
+            } else {
+                displayToast("Coins balance insufficient. Trade requires 200 Coins.", "error");
+            }
+        }
+
+        // ----------------- SYNTHESIZE DIGITAL AUDIO CHIRPS -----------------
+        function playChirpAudio(type) {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const now = audioCtx.currentTime;
+
+                if (type === 'coin') {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = "sine";
+                    osc.frequency.setValueAtTime(950, now);
+                    osc.frequency.exponentialRampToValueAtTime(1500, now + 0.12);
+                    gain.gain.setValueAtTime(0, now);
+                    gain.gain.linearRampToValueAtTime(0.2, now + 0.02);
+                    gain.gain.linearRampToValueAtTime(0, now + 0.15);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start();
+                    osc.stop(now + 0.16);
+                } else if (type === 'levelup') {
+                    [523.25, 659.25, 783.99, 1046.50].forEach((freq, idx) => {
+                        const osc = audioCtx.createOscillator();
+                        const gain = audioCtx.createGain();
+                        osc.type = "triangle";
+                        osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+                        gain.gain.setValueAtTime(0, now + idx * 0.08);
+                        gain.gain.linearRampToValueAtTime(0.2, now + idx * 0.08 + 0.02);
+                        gain.gain.linearRampToValueAtTime(0, now + idx * 0.08 + 0.2);
+                        osc.connect(gain);
+                        gain.connect(audioCtx.destination);
+                        osc.start(now + idx * 0.08);
+                        osc.stop(now + idx * 0.08 + 0.22);
+                    });
+                } else if (type === 'purchase') {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = "square";
+                    osc.frequency.setValueAtTime(600, now);
+                    osc.frequency.setValueAtTime(1200, now + 0.06);
+                    gain.gain.setValueAtTime(0, now);
+                    gain.gain.linearRampToValueAtTime(0.15, now + 0.01);
+                    gain.gain.linearRampToValueAtTime(0, now + 0.15);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start();
+                    osc.stop(now + 0.16);
+                } else if (type === 'freeze') {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = "sawtooth";
+                    osc.frequency.setValueAtTime(140, now);
+                    osc.frequency.exponentialRampToValueAtTime(40, now + 0.25);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start();
+                    osc.stop(now + 0.26);
+                }
+            } catch (e) {
+                console.warn("Synth audio blocked", e);
+            }
+        }
+
+        // ----------------- MOBILE TOAST SYSTEM -----------------
+        function displayToast(msg, type = 'info') {
+            const carrier = document.getElementById('toast-carrier');
+            const toast = document.createElement('div');
+            toast.className = `p-3 rounded-xl text-[10px] font-black uppercase tracking-wider shadow-2xl transition-all duration-300 transform translate-y-3 opacity-0 flex items-center gap-2 ${
+                type === 'success' ? 'bg-emerald-950 text-emerald-400 border border-emerald-500/20' :
+                type === 'error' ? 'bg-rose-950 text-rose-400 border border-rose-500/20' :
+                'bg-slate-900 text-slate-200 border border-slate-850'
+            }`;
+            toast.innerHTML = `<span>${type === 'success' ? '⚡' : '🔥'}</span><span>${msg}</span>`;
+            carrier.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.remove('translate-y-3', 'opacity-0');
+            }, 10);
+            setTimeout(() => {
+                toast.classList.add('translate-y-3', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+
+        // ----------------- PUSH NOTIFICATIONS -----------------
+        function enableNativeNotifs() {
+            if (!('Notification' in window)) {
+                displayToast("Web alerts are not supported by this device.", "error");
+                return;
+            }
+            Notification.requestPermission().then(permission => {
+                if (permission === 'granted') {
+                    displayToast("Notification Schedules established at 6:00 AM/PM!", "success");
+                    new Notification("⚽ The Instinctive Forward", {
+                        body: "Profile synchronised. Keep your streak alive today, Striker!",
+                        icon: "https://placehold.co/128x128/059669/ffffff?text=⚽"
+                    });
+                } else {
+                    displayToast("Notification permission declined.", "error");
+                }
+            });
+        }
+
+        function testNotifSound() {
+            playChirpAudio('levelup');
+            if (Notification.permission === 'granted') {
+                new Notification("⚽ The Instinctive Forward", {
+                    body: "ALERT TEST: Head over to the wall for Phase 1 drills!",
+                    icon: "https://placehold.co/128x128/059669/ffffff?text=⚽"
+                });
+            } else {
+                displayToast("Push notification simulated: 'Time to touch grass!'", "info");
+            }
+        }
+
+        // ----------------- RESET MANAGEMENT -----------------
+        function confirmResetStats() {
+            document.getElementById('modal-reset').classList.remove('hidden');
+        }
+
+        function closeResetModal() {
+            document.getElementById('modal-reset').classList.add('hidden');
+        }
+
+        function executeTotalReset() {
+            localStorage.clear();
+            userState = {
+                signedIn: false,
+                name: "",
+                height: "",
+                foot: "Right",
+                position: "CF",
+                coins: 100,
+                streak: 0,
+                freezes: 1,
+                xp: 0,
+                level: 1,
+                completedCore: { 1: false, 2: false, 3: false, 4: false },
+                completedSpecial: {},
+                lastCompletedDate: null,
+                lastLoginDate: null,
+                consecutiveMissedDays: 0,
+                composure: 0,
+                historyLog: {}
+            };
+
+            // Reset countdown timers
+            for (let k in activeTimers) {
+                clearInterval(activeTimers[k].interval);
+                activeTimers[k].active = false;
+                activeTimers[k].remaining = activeTimers[k].duration;
+            }
+
+            document.getElementById('ref-feel').value = "";
+            document.getElementById('ref-hardest').value = "";
+            document.getElementById('ai-report-board').classList.add('hidden');
+
+            saveUserProfile();
+            document.getElementById('modal-reset').classList.add('hidden');
+            document.getElementById('onboarding-screen').classList.remove('hidden');
+            displayToast("Academy dataset fully reset.", "success");
+        }
+
+        // ----------------- LOCAL VECTOR GRAPHICS (CANVAS) -----------------
+        function setupDrillAnimations() {
+            // Cancel old animation loops
+            for (let key in animationFrames) {
+                cancelAnimationFrame(animationFrames[key]);
+            }
+            startAnimationLoop(1, drawFieldContactDrill);
+            startAnimationLoop(2, drawFieldShoulderCheckDrill);
+            startAnimationLoop(3, drawFieldDeciderDrill);
+            startAnimationLoop(4, drawFieldFatigueDrill);
+        }
+
+        function startAnimationLoop(phase, renderCallback) {
+            const canvas = document.getElementById(`canv-${phase}`);
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+
+            let frameIndex = 0;
+            function runLoop() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                renderCallback(ctx, canvas.width, canvas.height, frameIndex);
+                frameIndex++;
+                animationFrames[phase] = requestAnimationFrame(runLoop);
+            }
+            runLoop();
+        }
+
+        function drawFieldContactDrill(ctx, w, h, f) {
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(w * 0.25, 0); ctx.lineTo(w * 0.25, h);
+            ctx.stroke();
+
+            // Draw gate cones
+            drawConeItem(ctx, w * 0.45, h * 0.32, '#10b981');
+            drawConeItem(ctx, w * 0.45, h * 0.68, '#10b981');
+
+            const px = w * 0.75;
+            const py = h * 0.5;
+            drawPlayerItem(ctx, px, py, f, "up");
+
+            const cycle = 120;
+            const step = f % cycle;
+            let bx = px; let by = py;
+
+            if (step < 30) {
+                const ratio = step / 30;
+                bx = px + (w * 0.25 - px) * ratio;
+            } else if (step < 60) {
+                const ratio = (step - 30) / 30;
+                bx = w * 0.25 + (px - w * 0.25) * ratio;
+            } else if (step < 90) {
+                const ratio = (step - 60) / 30;
+                bx = px + (w * 0.45 - px) * ratio;
+                by = py + (h * 0.38 - py) * ratio;
+            } else {
+                const ratio = (step - 90) / 30;
+                bx = w * 0.45 + (px - w * 0.45) * ratio;
+                by = h * 0.38 + (py - h * 0.38) * ratio;
+            }
+
+            drawBallItem(ctx, bx, by);
+        }
+
+        function drawFieldShoulderCheckDrill(ctx, w, h, f) {
+            ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(w * 0.2, 0); ctx.lineTo(w * 0.2, h);
+            ctx.stroke();
+
+            const c1x = w * 0.75; const c1y = h * 0.25;
+            const c2x = w * 0.75; const c2y = h * 0.75;
+            drawConeItem(ctx, c1x, c1y, '#f59e0b');
+            drawConeItem(ctx, c2x, c2y, '#3b82f6');
+
+            const px = w * 0.55;
+            const py = h * 0.5;
+
+            const cycle = 150;
+            const step = f % cycle;
+            let bx = px; let by = py;
+            let looking = false;
+
+            if (step < 35) {
+                const ratio = step / 35;
+                bx = px + (w * 0.2 - px) * ratio;
+            } else if (step < 70) {
+                const ratio = (step - 35) / 35;
+                bx = w * 0.2 + (px - w * 0.2) * ratio;
+                looking = true;
+            } else if (step < 110) {
+                const ratio = (step - 70) / 40;
+                bx = px + (c2x - px) * ratio;
+                by = py + (c2y - py) * ratio;
+            } else {
+                const ratio = (step - 110) / 40;
+                bx = c2x + (px - c2x) * ratio;
+                by = c2y + (py - c2y) * ratio;
+            }
+
+            let lookAngle = "left";
+            if (looking) {
+                lookAngle = "right-up";
+                ctx.strokeStyle = 'rgba(245, 158, 11, 0.4)';
+                ctx.lineWidth = 1.5;
+                ctx.setLineDash([4, 4]);
+                ctx.beginPath(); ctx.moveTo(px, py - 10); ctx.lineTo(c1x, c1y); ctx.stroke();
+                ctx.setLineDash([]);
+            } else if (step >= 70 && step < 110) {
+                lookAngle = "down-right";
+            }
+
+            drawPlayerItem(ctx, px, py, f, lookAngle);
+            drawBallItem(ctx, bx, by);
+        }
+
+        function drawFieldDeciderDrill(ctx, w, h, f) {
+            ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(w * 0.2, 0); ctx.lineTo(w * 0.2, h);
+            ctx.stroke();
+
+            const cx1 = w * 0.55; const cy1 = h * 0.25;
+            const cx2 = w * 0.8;  const cy2 = h * 0.5;
+            const cx3 = w * 0.55; const cy3 = h * 0.75;
+
+            const cycle = 160;
+            const step = f % cycle;
+            const chosen = Math.floor(f / cycle) % 3 + 1;
+
+            drawConeItem(ctx, cx1, cy1, chosen === 1 && step > 40 && step < 100 ? '#10b981' : '#ef4444');
+            drawConeItem(ctx, cx2, cy2, chosen === 2 && step > 40 && step < 100 ? '#10b981' : '#ef4444');
+            drawConeItem(ctx, cx3, cy3, chosen === 3 && step > 40 && step < 100 ? '#10b981' : '#ef4444');
+
+            const px = w * 0.5; const py = h * 0.5;
+            drawPlayerItem(ctx, px, py, f, "left");
+
+            let bx = px; let by = py;
+
+            if (step < 40) {
+                const ratio = step / 40;
+                bx = px + (w * 0.2 - px) * ratio;
+            } else if (step < 80) {
+                const ratio = (step - 40) / 40;
+                bx = w * 0.2 + (px - w * 0.2) * ratio;
+            } else if (step < 120) {
+                const ratio = (step - 80) / 40;
+                let tx = cx1; let ty = cy1;
+                if (chosen === 2) { tx = cx2; ty = cy2; }
+                if (chosen === 3) { tx = cx3; ty = cy3; }
+                bx = px + (tx - px) * 0.7 * ratio;
+                by = py + (ty - py) * 0.7 * ratio;
+            } else {
+                const ratio = (step - 120) / 40;
+                let tx = cx1; let ty = cy1;
+                if (chosen === 2) { tx = cx2; ty = cy2; }
+                if (chosen === 3) { tx = cx3; ty = cy3; }
+                bx = px + (tx - px) * 0.7 * (1 - ratio);
+                by = py + (ty - py) * 0.7 * (1 - ratio);
+            }
+
+            drawBallItem(ctx, bx, by);
+        }
+
+        function drawFieldFatigueDrill(ctx, w, h, f) {
+            ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(w * 0.2, 0); ctx.lineTo(w * 0.2, h);
+            ctx.stroke();
+
+            const cycle = 100;
+            const step = f % cycle;
+
+            let px = w * 0.65;
+            let py = h * 0.5;
+            let jumpHeight = 0;
+
+            if (step < 40) {
+                const jumpCycle = step % 15;
+                if (jumpCycle < 7) {
+                    jumpHeight = -Math.sin((jumpCycle / 7) * Math.PI) * 16;
+                }
+            }
+
+            drawPlayerItem(ctx, px, py + jumpHeight, f, "left");
+
+            let bx = px; let by = py;
+
+            if (step >= 40) {
+                const passCycle = (step - 40) % 20;
+                if (passCycle < 10) {
+                    const ratio = passCycle / 10;
+                    bx = px + (w * 0.2 - px) * ratio;
+                } else {
+                    const ratio = (passCycle - 10) / 10;
+                    bx = w * 0.2 + (px - w * 0.2) * ratio;
+                }
+            }
+
+            drawBallItem(ctx, bx, by);
+        }
+
+        function drawPlayerItem(ctx, x, y, f, angle) {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+            ctx.beginPath(); ctx.ellipse(x, y + 12, 11, 4, 0, 0, Math.PI * 2); ctx.fill();
+
+            // Shoulders
+            ctx.fillStyle = '#059669';
+            ctx.beginPath(); ctx.arc(x, y, 9, 0, Math.PI * 2); ctx.fill();
+
+            // Kit
+            ctx.fillStyle = '#10b981';
+            ctx.beginPath(); ctx.rect(x - 3, y - 7, 6, 14); ctx.fill();
+
+            // Head/Face Directions
+            ctx.fillStyle = '#f59e0b';
+            ctx.beginPath();
+            let hx = x; let hy = y - 4;
+            if (angle === "right-up") { hx = x + 3; hy = y - 5; }
+            else if (angle === "down-right") { hx = x + 4; hy = y + 4; }
+            else if (angle === "left") hx = x - 4;
+            ctx.arc(hx, hy, 3.5, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        function drawBallItem(ctx, x, y) {
+            ctx.fillStyle = 'rgba(0,0,0,0.4)';
+            ctx.beginPath(); ctx.arc(x + 2, y + 2, 4, 0, Math.PI * 2); ctx.fill();
+
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2); ctx.fill();
+
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 0.5;
+            ctx.beginPath();
+            ctx.moveTo(x, y - 4); ctx.lineTo(x, y + 4);
+            ctx.moveTo(x - 4, y); ctx.lineTo(x + 4, y);
+            ctx.stroke();
+        }
+
+        function drawConeItem(ctx, x, y, color) {
+            ctx.fillStyle = 'rgba(0,0,0,0.3)';
+            ctx.beginPath(); ctx.ellipse(x + 1, y + 4, 6, 2, 0, 0, Math.PI * 2); ctx.fill();
+
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.moveTo(x - 4, y + 3);
+            ctx.lineTo(x, y - 6);
+            ctx.lineTo(x + 4, y + 3);
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        // ----------------- DATE UTILITIES -----------------
+        function getFormattedTodayDate() {
+            return new Date().toISOString().split('T')[0];
+        }
+
+        function getFormattedDateString(date) {
+            return date.toISOString().split('T')[0];
+        }
+
+        function getLocalDateOfThisWeekday(dayIdx) {
+            const today = new Date();
+            const curr = today.getDay();
+            const gap = dayIdx - (curr === 0 ? 7 : curr);
+            const target = new Date(today);
+            target.setDate(today.getDate() + gap);
+            return target;
+        }
+
+        // ----------------- GEMINI INTEGRATION SYSTEM -----------------
+        function fetchAIPayloadContext() {
+            const feel = document.getElementById('ref-feel').value || "None logged yet";
+            const hard = document.getElementById('ref-hardest').value || "None logged yet";
+            return `
+Striker Profile: ${userState.name}
+Dominant Foot: ${userState.foot}
+Profile Position: ${userState.position}
+Streak count: ${userState.streak} Days
+Level Accomplished: Level ${userState.level}
+Reflection Comments:
+- Ball Contacts: "${feel}"
+- Hardest element: "${hard}"
+- Composure Rating: ${userState.composure}/5
+`;
+        }
+
+        async function requestAIVoicePepTalk() {
+            const btn = document.getElementById('btn-audio-talk');
+            const status = document.getElementById('ai-broadcast-status');
+
+            if (runningAudioClip) {
+                runningAudioClip.pause();
+                runningAudioClip = null;
+                btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Pep Talk`;
+                status.classList.add('hidden');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Loading...`;
+            status.classList.remove('hidden');
+            status.innerText = "Coach Fenrir is analyzing tactical metrics...";
+
+            const apiURL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${API_KEY}`;
+            const prompt = `Formulate a short, energetic, high-intensity 3-sentence locker room pep talk for a soccer player with these statistics:\n${fetchAIPayloadContext()}. Emphasize head scanning, locking ankles, and explosive deceleration.`;
+
+            const payload = {
+                contents: [{ parts: [{ text: prompt }] }],
+                generationConfig: {
+                    responseModalities: ["AUDIO"],
+                    speechConfig: {
+                        voiceConfig: { prebuiltVoiceConfig: { voiceName: "Fenrir" } }
+                    }
+                }
+            };
+
+            try {
+                const response = await fetch(apiURL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                if (!response.ok) throw new Error();
+
+                const resJSON = await response.json();
+                const base64Audio = resJSON?.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+
+                if (base64Audio) {
+                    const audioBuffer = base64ToArrayBuffer(base64Audio);
+                    const pcm16 = new Int16Array(audioBuffer);
+                    const wavBlob = convertPcmToWav(pcm16, 24000);
+                    const soundURL = URL.createObjectURL(wavBlob);
+
+                    runningAudioClip = new Audio(soundURL);
+                    runningAudioClip.play();
+                    status.innerText = "🔊 Streaming Coach Fenrir Vocal Broadcast...";
+                    btn.disabled = false;
+                    btn.innerHTML = `<i class="fa-solid fa-square"></i> Stop Talk`;
+                }
+            } catch (e) {
+                displayToast("Vocal synthesis failed. Key might be locked.", "error");
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Pep Talk`;
+                status.classList.add('hidden');
+            }
+        }
+
+        async function runAITacticalDebrief() {
+            const btn = document.getElementById('btn-text-debrief');
+            const board = document.getElementById('ai-report-board');
+            const textDest = document.getElementById('ai-report-text-area');
+
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Analyzing...`;
+            board.classList.remove('hidden');
+            textDest.innerHTML = `<div class="animate-pulse space-y-1">
+                <div class="h-2.5 bg-slate-800 rounded w-4/5"></div>
+                <div class="h-2.5 bg-slate-800 rounded"></div>
+            </div>`;
+
+            const apiURL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${API_KEY}`;
+            
+            const payload = {
+                contents: [{
+                    parts: [{
+                        text: `Provide a quick 3-bullet point tactical forward analysis for this session reflection diary:\n${fetchAIPayloadContext()}`
+                    }]
+                }],
+                systemInstruction: {
+                    parts: [{ text: "You are Coach Instinct, elite forward technical coordinator. Be direct, strict, and encouraging." }]
+                }
+            };
+
+            try {
+                const response = await fetch(apiURL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) throw new Error();
+
+                const resJSON = await response.json();
+                const outputText = resJSON?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+                if (outputText) {
+                    textDest.innerHTML = outputText
+                        .replace(/\*\*(.*?)\*\//g, '<strong class="text-emerald-400">$1</strong>')
+                        .replace(/\*(.*?)\n/g, '<li class="ml-1 text-slate-300">$1</li>');
+                    displayToast("Technical debrief formulated!", "success");
+                }
+            } catch (err) {
+                textDest.innerHTML = `<span class="text-rose-400">Tactical debrief unavailable.</span>`;
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fa-solid fa-brain"></i> Debrief`;
+            }
+        }
+
+        function base64ToArrayBuffer(b64) {
+            const bin = atob(b64);
+            const len = bin.length;
+            const bytes = new Uint8Array(len);
+            for (let i = 0; i < len; i++) {
+                bytes[i] = bin.charCodeAt(i);
+            }
+            return bytes.buffer;
+        }
+
+        function convertPcmToWav(pcm, rate) {
+            const buf = new ArrayBuffer(44 + pcm.length * 2);
+            const view = new DataView(buf);
+            
+            writeStringView(view, 0, 'RIFF');
+            view.setUint32(4, 36 + pcm.length * 2, true);
+            writeStringView(view, 8, 'WAVE');
+            writeStringView(view, 12, 'fmt ');
+            view.setUint32(16, 16, true);
+            view.setUint16(20, 1, true); 
+            view.setUint16(22, 1, true); 
+            view.setUint32(24, rate, true);
+            view.setUint32(28, rate * 2, true);
+            view.setUint16(32, 2, true);
+            view.setUint16(34, 16, true);
+            writeStringView(view, 36, 'data');
+            view.setUint32(40, pcm.length * 2, true);
+
+            for (let i = 0; i < pcm.length; i++) {
+                view.setInt16(44 + i * 2, pcm[i], true);
+            }
+
+            return new Blob([buf], { type: 'audio/wav' });
+        }
+
+        function writeStringView(view, offset, str) {
+            for (let i = 0; i < str.length; i++) {
+                view.setUint8(offset + i, str.charCodeAt(i));
+            }
+        }
+    </script>
+</body>
+</html>
